@@ -2,6 +2,12 @@ package com.example.ddns
 
 const val MAX_ACCOUNTS = 3
 
+/**
+ * Интервалы от 15 минут — периодическая задача WorkManager (меньше Android не позволяет).
+ * Интервалы короче — фоновая служба с постоянным уведомлением (DdnsService).
+ */
+const val PERIODIC_MIN_SECONDS = 15 * 60
+
 /** Сервисы, понимающие протокол DynDNS2 (/nic/update). */
 enum class Provider(val title: String, val updateUrl: String) {
     DYNU("Dynu", "https://api.dynu.com/nic/update"),
@@ -32,7 +38,7 @@ data class Account(
 }
 
 data class Settings(
-    val intervalMinutes: Int,
+    val intervalSeconds: Int,
     val wifiOnly: Boolean,
     val accounts: List<Account>,
 )
@@ -51,22 +57,25 @@ data class Status(
     val log: String,
 )
 
-/**
- * Варианты частоты проверки. Периодическая задача WorkManager не может
- * запускаться чаще раза в 15 минут, поэтому для 5 и 10 минут используется
- * цепочка разовых задач (см. Scheduler).
- */
+/** Варианты частоты проверки, в секундах. */
 val INTERVALS: List<Pair<Int, String>> = listOf(
-    5 to "5 минут",
-    10 to "10 минут",
-    15 to "15 минут",
-    30 to "30 минут",
-    60 to "1 час",
-    120 to "2 часа",
-    360 to "6 часов",
-    720 to "12 часов",
-    1440 to "24 часа",
+    30 to "30 секунд",
+    60 to "1 минута",
+    5 * 60 to "5 минут",
+    15 * 60 to "15 минут",
+    60 * 60 to "1 час",
+    2 * 60 * 60 to "2 часа",
+    8 * 60 * 60 to "8 часов",
+    24 * 60 * 60 to "24 часа",
 )
 
-fun intervalTitle(minutes: Int): String =
-    INTERVALS.firstOrNull { it.first == minutes }?.second ?: "$minutes мин"
+const val DEFAULT_INTERVAL_SECONDS = 15 * 60
+
+fun intervalTitle(seconds: Int): String =
+    INTERVALS.firstOrNull { it.first == seconds }?.second ?: "$seconds сек"
+
+/** Позиция в списке INTERVALS для сохранённого значения (ближайшая не меньше). */
+fun intervalPosition(seconds: Int): Int {
+    val pos = INTERVALS.indexOfFirst { it.first >= seconds }
+    return if (pos >= 0) pos else INTERVALS.lastIndex
+}

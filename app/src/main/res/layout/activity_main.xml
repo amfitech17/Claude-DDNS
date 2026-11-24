@@ -18,7 +18,7 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <!-- Общие настройки -->
+        <!-- Частота -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,10 +32,10 @@
             android:minHeight="48dp" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/intervalHint"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:alpha="0.7"
-            android:text="@string/hint_interval"
             android:textSize="12sp" />
 
         <CheckBox
@@ -45,12 +45,18 @@
             android:layout_marginTop="8dp"
             android:text="@string/label_wifi_only" />
 
-        <!-- Сюда добавляются три карточки аккаунтов (account_card.xml) -->
-        <LinearLayout
-            android:id="@+id/accounts"
+        <!-- Аккаунты: выбор открывает отдельное окно настроек -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/label_accounts" />
+
+        <Spinner
+            android:id="@+id/accountPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:minHeight="48dp" />
 
         <Button
             android:id="@+id/save"
@@ -78,6 +84,13 @@
                 android:layout_weight="1"
                 android:text="@string/btn_stop" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/battery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_battery"
+            android:visibility="gone" />
 
         <!-- Состояние -->
         <TextView

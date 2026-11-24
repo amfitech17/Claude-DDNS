@@ -2,27 +2,45 @@
 <resources>
     <string name="app_name">DDNS Updater</string>
 
+    <!-- Главный экран -->
     <string name="label_interval">Частота проверки</string>
-    <string name="hint_interval">Когда телефон спит, Android может откладывать проверки на несколько минут.</string>
+    <string name="hint_interval_slow">Когда телефон спит, Android может откладывать проверку на несколько минут.</string>
+    <string name="hint_interval_fast">Работает через постоянное уведомление и не даёт телефону засыпать. 30 секунд и 1 минута заметно расходуют батарею.</string>
     <string name="label_wifi_only">Только через Wi-Fi (не отправлять IP мобильного интернета)</string>
+    <string name="label_accounts">Аккаунты DDNS</string>
+    <string name="account_pick">Выберите аккаунт для настройки…</string>
+    <string name="account_item">Аккаунт %1$d — %2$s</string>
+    <string name="state_on">включён</string>
+    <string name="state_off">выключен</string>
+    <string name="state_incomplete">не настроен</string>
 
+    <string name="btn_save">Сохранить и запустить</string>
+    <string name="btn_check">Проверить сейчас</string>
+    <string name="btn_stop">Остановить</string>
+    <string name="btn_battery">Разрешить работу в фоне без ограничений</string>
+    <string name="btn_clear_log">Очистить</string>
+    <string name="label_log">Журнал</string>
+
+    <!-- Окно аккаунта -->
     <string name="account_n">Аккаунт %1$d</string>
+    <string name="label_enabled">Использовать этот аккаунт</string>
     <string name="label_provider">Сервис DDNS</string>
     <string name="hint_url">https://ddns.example.com/nic/update</string>
     <string name="label_hostname">Имя хоста</string>
     <string name="hint_hostname">DOMAIN.freeddns.org</string>
     <string name="label_username">Логин</string>
     <string name="label_password">Пароль (для Dynu можно MD5 или SHA-256 пароля)</string>
+    <string name="btn_cancel">Отмена</string>
+    <string name="btn_save_account">Сохранить</string>
 
-    <string name="btn_save">Сохранить и запустить</string>
-    <string name="btn_check">Проверить сейчас</string>
-    <string name="btn_stop">Остановить</string>
-    <string name="btn_clear_log">Очистить</string>
-    <string name="label_log">Журнал</string>
-
-    <string name="err_no_accounts">Включите хотя бы один аккаунт</string>
+    <!-- Сообщения -->
+    <string name="err_need_account">Сначала выберите аккаунт в списке, включите и заполните его</string>
     <string name="err_fields">Аккаунт %1$d: заполните хост, логин и пароль</string>
     <string name="err_url">Аккаунт %1$d: укажите URL сервера, начиная с https://</string>
-    <string name="err_save_first">Сначала сохраните изменения в настройках</string>
+    <string name="err_save_first">Сначала нажмите «Сохранить и запустить», чтобы применить частоту</string>
     <string name="msg_waiting_wifi">Сейчас нет Wi-Fi — проверка выполнится, когда телефон подключится к Wi-Fi</string>
+
+    <!-- Уведомление фоновой службы -->
+    <string name="notif_channel">Фоновые проверки DDNS</string>
+    <string name="notif_text">Интервал проверки IP: %1$s</string>
 </resources>

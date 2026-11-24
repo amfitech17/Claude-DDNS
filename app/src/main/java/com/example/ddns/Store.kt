@@ -33,7 +33,7 @@ object Store {
             val providerName = p.getString(k(i, "provider"), null)
             Account(
                 index = i,
-                enabled = p.getBoolean(k(i, "enabled"), i == 0),
+                enabled = p.getBoolean(k(i, "enabled"), false),
                 provider = Provider.entries.firstOrNull { it.name == providerName } ?: Provider.DYNU,
                 customUrl = p.getString(k(i, "url"), null).orEmpty(),
                 hostname = p.getString(k(i, "hostname"), null).orEmpty(),
@@ -45,33 +45,44 @@ object Store {
             )
         }
         return Settings(
-            intervalMinutes = p.getInt("interval", 15),
+            intervalSeconds = intervalSeconds(ctx),
             wifiOnly = p.getBoolean("wifiOnly", true),
             accounts = accounts,
         )
     }
 
-    fun intervalMinutes(ctx: Context): Int = config(ctx).getInt("interval", 15)
+    /** Частота проверки в секундах. Версия 1 хранила минуты в ключе "interval". */
+    fun intervalSeconds(ctx: Context): Int {
+        val p = config(ctx)
+        val seconds = p.getInt("intervalSec", -1)
+        if (seconds > 0) return seconds
+        val oldMinutes = p.getInt("interval", -1)
+        return if (oldMinutes > 0) oldMinutes * 60 else DEFAULT_INTERVAL_SECONDS
+    }
 
-    fun saveSettings(ctx: Context, s: Settings) {
-        val e = config(ctx).edit()
-            .putInt("interval", s.intervalMinutes)
-            .putBoolean("wifiOnly", s.wifiOnly)
-        for (a in s.accounts) {
-            e.putBoolean(k(a.index, "enabled"), a.enabled)
-                .putString(k(a.index, "provider"), a.provider.name)
-                .putString(k(a.index, "url"), a.customUrl.trim())
-                .putString(k(a.index, "hostname"), a.hostname.trim())
-                .putString(k(a.index, "username"), a.username.trim())
-                .putString(k(a.index, "password"), if (a.password.isEmpty()) "" else Crypto.encrypt(a.password))
-        }
-        e.apply()
+    fun wifiOnly(ctx: Context): Boolean = config(ctx).getBoolean("wifiOnly", true)
 
-        // Пользователь сохранил настройки — снимаем остановку после фатальных ошибок и паузы.
+    fun saveGeneral(ctx: Context, intervalSeconds: Int, wifiOnly: Boolean) {
+        config(ctx).edit()
+            .putInt("intervalSec", intervalSeconds)
+            .putBoolean("wifiOnly", wifiOnly)
+            .apply()
+    }
+
+    fun saveAccount(ctx: Context, a: Account) {
+        config(ctx).edit()
+            .putBoolean(k(a.index, "enabled"), a.enabled)
+            .putString(k(a.index, "provider"), a.provider.name)
+            .putString(k(a.index, "url"), a.customUrl.trim())
+            .putString(k(a.index, "hostname"), a.hostname.trim())
+            .putString(k(a.index, "username"), a.username.trim())
+            .putString(k(a.index, "password"), if (a.password.isEmpty()) "" else Crypto.encrypt(a.password))
+            .apply()
+
+        // Новые настройки аккаунта — сбрасываем его прошлое состояние, остановку и паузу.
         val st = statusPrefs(ctx).edit()
-        for (i in 0 until MAX_ACCOUNTS) {
-            listOf("halt", "sentIp", "sentAt", "pauseUntil").forEach { st.remove(k(i, it)) }
-        }
+        listOf("halt", "sentIp", "sentAt", "pauseUntil", "dnsIp", "answer")
+            .forEach { st.remove(k(a.index, it)) }
         st.apply()
     }
 
@@ -134,16 +145,33 @@ object Store {
 
     // ---------- Журнал (аналог :log info) ----------
 
+    /** Одинаковые сообщения подряд не плодят строки: обновляется время и счётчик (×N). */
     @Synchronized
     fun log(ctx: Context, message: String) {
         Log.i(TAG, message)
         val p = statusPrefs(ctx)
-        val line = "${formatTime(now())}  $message"
-        val old = p.getString("log", null).orEmpty().lines().filter { it.isNotBlank() }
-        p.edit().putString("log", (listOf(line) + old).take(MAX_LOG_LINES).joinToString("\n")).apply()
+        val time = formatTime(now())
+        val lines = p.getString("log", null).orEmpty().lines().filter { it.isNotBlank() }.toMutableList()
+
+        if (lines.isNotEmpty() && p.getString("lastLogMsg", null) == message) {
+            val count = p.getInt("lastLogCount", 1) + 1
+            lines[0] = "$time  $message (×$count)"
+            p.edit()
+                .putString("log", lines.joinToString("\n"))
+                .putInt("lastLogCount", count)
+                .apply()
+        } else {
+            lines.add(0, "$time  $message")
+            p.edit()
+                .putString("log", lines.take(MAX_LOG_LINES).joinToString("\n"))
+                .putString("lastLogMsg", message)
+                .putInt("lastLogCount", 1)
+                .apply()
+        }
     }
 
-    fun clearLog(ctx: Context) = statusPrefs(ctx).edit().remove("log").apply()
+    fun clearLog(ctx: Context) =
+        statusPrefs(ctx).edit().remove("log").remove("lastLogMsg").remove("lastLogCount").apply()
 
     fun formatTime(ms: Long): String =
         if (ms == 0L) "—" else SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault()).format(Date(ms))
