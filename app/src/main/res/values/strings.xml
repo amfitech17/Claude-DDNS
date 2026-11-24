@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DDNS Updater</string>
+
+    <string name="label_interval">Частота проверки</string>
+    <string name="hint_interval">Когда телефон спит, Android может откладывать проверки на несколько минут.</string>
+    <string name="label_wifi_only">Только через Wi-Fi (не отправлять IP мобильного интернета)</string>
+
+    <string name="account_n">Аккаунт %1$d</string>
+    <string name="label_provider">Сервис DDNS</string>
+    <string name="hint_url">https://ddns.example.com/nic/update</string>
+    <string name="label_hostname">Имя хоста</string>
+    <string name="hint_hostname">DOMAIN.freeddns.org</string>
+    <string name="label_username">Логин</string>
+    <string name="label_password">Пароль (для Dynu можно MD5 или SHA-256 пароля)</string>
+
+    <string name="btn_save">Сохранить и запустить</string>
+    <string name="btn_check">Проверить сейчас</string>
+    <string name="btn_stop">Остановить</string>
+    <string name="btn_clear_log">Очистить</string>
+    <string name="label_log">Журнал</string>
+
+    <string name="err_no_accounts">Включите хотя бы один аккаунт</string>
+    <string name="err_fields">Аккаунт %1$d: заполните хост, логин и пароль</string>
+    <string name="err_url">Аккаунт %1$d: укажите URL сервера, начиная с https://</string>
+    <string name="err_save_first">Сначала сохраните изменения в настройках</string>
+    <string name="msg_waiting_wifi">Сейчас нет Wi-Fi — проверка выполнится, когда телефон подключится к Wi-Fi</string>
+</resources>
